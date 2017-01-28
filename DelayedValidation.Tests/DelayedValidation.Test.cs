@@ -53,10 +53,7 @@
             Assert.AreEqual("first", s.FirstName);
             Assert.AreEqual("last", s.LastName);
             Assert.AreEqual(101, s.Age);
-            Assert.AreEqual(
-                1,
-                s.GetValidationErrors()
-                    .Count);
+            Assert.AreEqual(1, s.GetValidationErrors().Count);
         }
 
         [TestMethod]

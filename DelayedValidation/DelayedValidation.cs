@@ -113,6 +113,13 @@
             public Func<object[], bool> ValidationFunc { get; }
 
             #endregion
+
+            public override bool Equals(object obj)
+            {
+                ValidationRule v = obj as ValidationRule;
+
+                return ValidationFunc.Equals(v.ValidationFunc);
+            }
         }
     }
 }
