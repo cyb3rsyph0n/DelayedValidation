@@ -1,12 +1,14 @@
 ﻿namespace DelayedValidation
 {
-    using System;
-
-    public class SomeDomainObject : DelayedValidation
+    /// <summary>
+    ///     Some domain object that requires to always be valid but has properties that are dependant on one another or should
+    ///     run delayed validation
+    /// </summary>
+    public class SomeDomainObject : DelayedValidation, IDraftable
     {
         #region Fields
 
-        private int age = -1;
+        private int age;
 
         private string firstName;
 
@@ -16,23 +18,31 @@
 
         #region Constructors and Destructors
 
-        public SomeDomainObject(string firstName, string lastName)
+        /// <summary>
+        ///     Constructor to create a valid class
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="age"></param>
+        public SomeDomainObject(string firstName, string lastName, int age)
             : this()
         {
-            firstName = firstName;
-            lastName = lastName;
+            FirstName = firstName;
+            LastName = lastName;
+            Age = age;
         }
 
         private SomeDomainObject()
         {
-            AddValidationRule(delegate { return age > 100; }, null, new Exception("Age Cannot Be Greater Than 100"));
-            AddValidationRule(ageGreaterThanZero, null, new Exception("Age Must Be Greater Than Zero"));
         }
 
         #endregion
 
         #region Public Properties
 
+        /// <summary>
+        ///     HOLDS THE AGE OF THE DOMAIN OBJECT
+        /// </summary>
         public int Age
         {
             get
@@ -44,9 +54,24 @@
             set
             {
                 age = value;
+
+                //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS < 100
+                AddDelayedValidationRule(
+                    delegate { return age < 100; },
+                    null,
+                    new ValidationException("Age Cannot Be Greater Than 100"));
+
+                //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS > 0
+                AddDelayedValidationRule(
+                    ageGreaterThanZero,
+                    null,
+                    new ValidationException("Age Must Be Greater Than Zero"));
             }
         }
 
+        /// <summary>
+        ///     HOLDS THE FIRST NAME OF THE DOMAIN OBJECT
+        /// </summary>
         public string FirstName
         {
             get
@@ -57,9 +82,35 @@
             set
             {
                 firstName = value;
+
+                //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT EMPTY USING A DELEGATE
+                AddDelayedValidationRule(
+                    delegate { return !string.IsNullOrEmpty(firstName); },
+                    new object[] { },
+                    new ValidationException($"{nameof(firstName)} cannot be empty"));
+
+                //ADD A RULE TO MAKE SURE THE FIRST NAME IS 3 OR MORE CHARACTERS USING LAMBDA
+                AddDelayedValidationRule(
+                    args => firstName.Length >= 3,
+                    null,
+                    new ValidationException($"{nameof(firstName)} must be at least 3 characters long"));
+
+                //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT THE SAME AS THE LAST NAME USING A METHOD
+                AddDelayedValidationRule(
+                    firstAndLastCannotBeEqual,
+                    null,
+                    new ValidationException($"{nameof(firstName)} and {nameof(lastName)} cannot be the same"));
             }
         }
 
+        /// <summary>
+        ///     IMPLEMENTED FROM IDRAFTABLE TO ALLOW READS OF AN INVALID OBJECT
+        /// </summary>
+        public bool isDraft { get; set; } = false;
+
+        /// <summary>
+        ///     HOLDS LAST NAME OF THE DOMAIN OBJECT
+        /// </summary>
         public string LastName
         {
             get
@@ -70,6 +121,12 @@
             set
             {
                 lastName = value;
+
+                //ADD A RULE TO MAKE SURE THE FIRST NAME AND LAST NAME ARE NOT EQUAL
+                AddDelayedValidationRule(
+                    firstAndLastCannotBeEqual,
+                    new object[] { },
+                    new ValidationException("First and Last cannot be the same"));
             }
         }
 
@@ -80,6 +137,11 @@
         private bool ageGreaterThanZero(object[] o)
         {
             return age > 0;
+        }
+
+        private bool firstAndLastCannotBeEqual(object[] arg)
+        {
+            return firstName != lastName;
         }
 
         #endregion
