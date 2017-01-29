@@ -64,10 +64,20 @@
             validationRules.ForEach(
                 v =>
                 {
-                    if (v.ValidationFunc.Invoke(v.Arguments)) return;
-                    if (throwExceptions && !isDraft) throw v.ValidationError;
+                    //USE A TRY IN CASE WE'RE NOT SUPPOSED TO THROW ERRORS WE CAN CONTAIN THEM AND TRACK THEM AS VALIDATION ERRORS
+                    try
+                    {
+                        if (v.ValidationFunc.Invoke(v.Arguments)) return;
+                        if (throwExceptions && !isDraft) throw v.ValidationError;
 
-                    validationExceptions.Add(v.ValidationError.Message);
+                        validationExceptions.Add(v.ValidationError.Message);
+                    }
+                    catch (Exception e)
+                    {
+                        if (throwExceptions && !isDraft) throw e;
+
+                        validationExceptions.Add(e.Message);
+                    }
                 });
 
             //IF EVERYTHING PASSES VALIDATION THEN WE DO NOT NEED TO KEEP RE-VALIDATING THE SAME RULES
@@ -114,12 +124,16 @@
 
             #endregion
 
+            #region Public Methods and Operators
+
             public override bool Equals(object obj)
             {
-                ValidationRule v = obj as ValidationRule;
+                var v = obj as ValidationRule;
 
                 return ValidationFunc.Equals(v.ValidationFunc);
             }
+
+            #endregion
         }
     }
 }
