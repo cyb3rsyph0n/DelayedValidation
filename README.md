@@ -14,6 +14,10 @@
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request :D
 
+## Todo
+
+ Look at injecting the Update(true) into property getters
+
 ## History
 
  This is still a work in progress. If you set a property multiple times it will add the validation rule over and over. On simple properties this is not an issue but if each rule were to call a website or remote API the turn around time for calling over and over again could get expensive.
