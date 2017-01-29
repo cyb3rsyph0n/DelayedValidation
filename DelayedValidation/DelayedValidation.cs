@@ -30,6 +30,8 @@
             object[] arguments,
             Exception validationError)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            if (validationError == null) throw new ArgumentNullException(nameof(validationError));
             var newRule = new ValidationRule(action, arguments, validationError);
 
             //TODO: VALIDATION RULES DUPLICATE IF YOU CALL ADD OVER AND OVER
@@ -52,7 +54,7 @@
         /// </summary>
         /// <param name="throwExceptions"></param>
         /// <returns></returns>
-        public virtual bool Validate(bool throwExceptions)
+        public virtual bool Validate(bool throwExceptions = true)
         {
             //IF INHERITS IDRAFTABLE AND IS A DRAFT THEN DO NOT THROW ERRORS REGARDLESS OF throwException PARAM
             var isDraft = GetType()
@@ -96,8 +98,17 @@
         {
             #region Constructors and Destructors
 
+            /// <summary>
+            ///     Constructor for creating a new validation rule
+            /// </summary>
+            /// <param name="validationFunc"></param>
+            /// <param name="arguments"></param>
+            /// <param name="validationError"></param>
             public ValidationRule(Func<object[], bool> validationFunc, object[] arguments, Exception validationError)
             {
+                if (validationFunc == null) throw new ArgumentNullException(nameof(validationFunc));
+                if (validationError == null) throw new ArgumentNullException(nameof(validationError));
+
                 ValidationFunc = validationFunc;
                 Arguments = arguments;
                 ValidationError = validationError;
@@ -105,32 +116,47 @@
 
             #endregion
 
-            #region Public Properties
+            #region Properties
 
             /// <summary>
             ///     Arguments that should be passed into validation method
             /// </summary>
-            public object[] Arguments { get; }
+            internal object[] Arguments { get; }
 
             /// <summary>
             ///     Error that should be thrown in the event of a failure
             /// </summary>
-            public Exception ValidationError { get; }
+            internal Exception ValidationError { get; }
 
             /// <summary>
             ///     Method to be called that will run the validation
             /// </summary>
-            public Func<object[], bool> ValidationFunc { get; }
+            internal Func<object[], bool> ValidationFunc { get; }
 
             #endregion
 
             #region Public Methods and Operators
 
+            /// <summary>
+            ///     Override equals to test if the functions passed in are equal
+            /// </summary>
+            /// <param name="obj">compared object</param>
+            /// <returns>true if the objects are the same</returns>
             public override bool Equals(object obj)
             {
+                if (obj == null) throw new ArgumentNullException(nameof(obj));
                 var v = obj as ValidationRule;
 
                 return ValidationFunc.Equals(v.ValidationFunc);
+            }
+
+            /// <summary>
+            ///     override to return the hascode of the validation function
+            /// </summary>
+            /// <returns></returns>
+            public override int GetHashCode()
+            {
+                return ValidationFunc.GetHashCode();
             }
 
             #endregion

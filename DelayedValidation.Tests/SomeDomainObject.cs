@@ -47,7 +47,7 @@
         {
             get
             {
-                Validate(true);
+                Validate();
                 return age;
             }
 
@@ -76,7 +76,7 @@
         {
             get
             {
-                Validate(true);
+                Validate();
                 return firstName;
             }
             set
@@ -115,7 +115,7 @@
         {
             get
             {
-                Validate(true);
+                Validate();
                 return lastName;
             }
             set
