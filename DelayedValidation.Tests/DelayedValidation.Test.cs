@@ -2,6 +2,8 @@
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using Newtonsoft.Json;
+
     [TestClass]
     public class DelayedValidationTest
     {
@@ -49,7 +51,7 @@
         {
             var s = new SomeDomainObject("first", "last", 101);
 
-            s.isDraft = true;
+            s.IsDraft = true;
             Assert.AreEqual("first", s.FirstName);
             Assert.AreEqual("last", s.LastName);
             Assert.AreEqual(101, s.Age);
@@ -64,6 +66,52 @@
             Assert.AreEqual("first", s.FirstName);
             Assert.AreEqual("last", s.LastName);
             Assert.AreEqual(25, s.Age);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void Serialize_Invalid_Object()
+        {
+            var s = new SomeDomainObject("first", "last", 101);
+
+            var j = JsonConvert.SerializeObject(s);
+        }
+
+        [TestMethod]
+        public void Serialize_Invalid_Draftable_Object()
+        {
+            var s = new SomeDomainObject("first", "last", 101);
+
+            s.IsDraft = true;
+
+            var j = JsonConvert.SerializeObject(s);
+        }
+
+        [TestMethod]
+        public void DeSerialize_Invalid_Draftable_Object()
+        {
+            var s =
+                JsonConvert.DeserializeObject<SomeDomainObject>(
+                    "{\"Age\":101,\"FirstName\":\"first\",\"IsDraft\":true,\"LastName\":\"last\"}");
+
+            Assert.AreEqual("first", s.FirstName);
+            Assert.AreEqual("last", s.LastName);
+            Assert.AreEqual(101, s.Age);
+            Assert.AreEqual(1, s.GetValidationErrors().Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ValidationException))]
+        public void DeSerialize_Invalid__Object()
+        {
+            var s =
+                JsonConvert.DeserializeObject<SomeDomainObject>(
+                    "{\"Age\":101,\"FirstName\":\"first\",\"IsDraft\":false,\"LastName\":\"last\"}");
+
+            Assert.AreEqual("first", s.FirstName);
+            Assert.AreEqual("last", s.LastName);
+            Assert.AreEqual(101, s.Age);
+            Assert.AreEqual(1, s.GetValidationErrors().Count);
         }
 
         #endregion

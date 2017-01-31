@@ -58,7 +58,7 @@
         {
             //IF INHERITS IDRAFTABLE AND IS A DRAFT THEN DO NOT THROW ERRORS REGARDLESS OF throwException PARAM
             var isDraft = GetType()
-                              .GetInterface(nameof(IDraftable)) != null && ((IDraftable)this).isDraft;
+                              .GetInterface(nameof(IDraftable)) != null && ((IDraftable)this).IsDraft;
 
             //CLEAR OUT THE LIST OF EXCEPTIONS
             validationExceptions.Clear();

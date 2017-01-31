@@ -8,6 +8,6 @@ namespace DelayedValidation
 {
     public interface IDraftable
     {
-        bool isDraft { get; set; }
+        bool IsDraft { get; set; }
     }
 }

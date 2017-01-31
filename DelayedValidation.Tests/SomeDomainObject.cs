@@ -106,7 +106,7 @@
         /// <summary>
         ///     IMPLEMENTED FROM IDRAFTABLE TO ALLOW READS OF AN INVALID OBJECT
         /// </summary>
-        public bool isDraft { get; set; } = false;
+        public bool IsDraft { get; set; } = false;
 
         /// <summary>
         ///     HOLDS LAST NAME OF THE DOMAIN OBJECT
