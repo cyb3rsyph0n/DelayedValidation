@@ -9,11 +9,17 @@
     /// </summary>
     public abstract class DelayedValidation
     {
+        #region Fields
+
+        private bool isDirty;
+
+        private List<ValidationRule> validationRules = new List<ValidationRule>();
+
+        #endregion
+
         #region Properties
 
-        protected internal List<string> validationExceptions { get; } = new List<string>();
-
-        private List<ValidationRule> validationRules { get; } = new List<ValidationRule>();
+        protected internal List<string> ValidationExceptions { get; } = new List<string>();
 
         #endregion
 
@@ -46,7 +52,7 @@
         {
             Validate(false);
 
-            return validationExceptions.AsReadOnly();
+            return ValidationExceptions.AsReadOnly();
         }
 
         /// <summary>
@@ -57,11 +63,10 @@
         public virtual bool Validate(bool throwExceptions = true)
         {
             //IF INHERITS IDRAFTABLE AND IS A DRAFT THEN DO NOT THROW ERRORS REGARDLESS OF throwException PARAM
-            var isDraft = GetType()
-                              .GetInterface(nameof(IDraftable)) != null && ((IDraftable)this).IsDraft;
+            var isDraft = GetType().GetInterface(nameof(IDraftable)) != null && ((IDraftable)this).IsDraft;
 
             //CLEAR OUT THE LIST OF EXCEPTIONS
-            validationExceptions.Clear();
+            ValidationExceptions.Clear();
 
             validationRules.ForEach(
                 v =>
@@ -72,21 +77,46 @@
                         if (v.ValidationFunc.Invoke(v.Arguments)) return;
                         if (throwExceptions && !isDraft) throw v.ValidationError;
 
-                        validationExceptions.Add(v.ValidationError.Message);
+                        ValidationExceptions.Add(v.ValidationError.Message);
                     }
                     catch (Exception e)
                     {
                         if (throwExceptions && !isDraft) throw e;
 
-                        validationExceptions.Add(e.Message);
+                        ValidationExceptions.Add(e.Message);
                     }
                 });
 
-            //IF EVERYTHING PASSES VALIDATION THEN WE DO NOT NEED TO KEEP RE-VALIDATING THE SAME RULES
-            if (validationExceptions.Count == 0) validationRules.Clear();
+            //RETURN TRUE IF THERE WERE NO ERRORS OR FALSE IF SOMETHING FAILED AND UPDATE THE isDirty FLAG
+            return !(isDirty = ValidationExceptions.Count != 0);
+        }
 
-            //RETURN TRUE IF THERE WERE NO ERRORS OR FALSE IF SOMETHING FAILED
-            return validationExceptions.Count == 0;
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        ///     Handles retrieving the value but first running the validate if we're dirty
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        protected internal T GetField<T>(T field)
+        {
+            if (isDirty) Validate();
+            return field;
+        }
+
+        /// <summary>
+        ///     Handles setting the dirty flag and updating the property value
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
+        protected internal void SetField<T>(ref T field, T value)
+        {
+            isDirty = true;
+            field = value;
         }
 
         #endregion

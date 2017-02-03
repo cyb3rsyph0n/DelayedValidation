@@ -32,8 +32,40 @@
             Age = age;
         }
 
+        /// <summary>
+        ///     Default constructor just adds all of the validation rules for this object
+        /// </summary>
         private SomeDomainObject()
         {
+            //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS < 100
+            AddDelayedValidationRule(
+                delegate { return age < 100; },
+                null,
+                new ValidationException("Age Cannot Be Greater Than 100"));
+
+            //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS > 0
+            AddDelayedValidationRule(
+                ageGreaterThanZero,
+                null,
+                new ValidationException("Age Must Be Greater Than Zero"));
+
+            //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT EMPTY USING A DELEGATE
+            AddDelayedValidationRule(
+                delegate { return !string.IsNullOrEmpty(firstName); },
+                new object[] { },
+                new ValidationException($"{nameof(firstName)} cannot be empty"));
+
+            //ADD A RULE TO MAKE SURE THE FIRST NAME IS 3 OR MORE CHARACTERS USING LAMBDA
+            AddDelayedValidationRule(
+                args => firstName.Length >= 3,
+                null,
+                new ValidationException($"{nameof(firstName)} must be at least 3 characters long"));
+
+            //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT THE SAME AS THE LAST NAME USING A METHOD
+            AddDelayedValidationRule(
+                firstAndLastCannotBeEqual,
+                null,
+                new ValidationException($"{nameof(firstName)} and {nameof(lastName)} cannot be the same"));
         }
 
         #endregion
@@ -47,25 +79,12 @@
         {
             get
             {
-                Validate();
-                return age;
+                return GetField(age);
             }
 
             set
             {
-                age = value;
-
-                //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS < 100
-                AddDelayedValidationRule(
-                    delegate { return age < 100; },
-                    null,
-                    new ValidationException("Age Cannot Be Greater Than 100"));
-
-                //ADD DELAYED VALIDATION RULE TO MAKE SURE THE AGE IS > 0
-                AddDelayedValidationRule(
-                    ageGreaterThanZero,
-                    null,
-                    new ValidationException("Age Must Be Greater Than Zero"));
+                SetField(ref age, value);
             }
         }
 
@@ -76,30 +95,11 @@
         {
             get
             {
-                Validate();
-                return firstName;
+                return GetField(firstName);
             }
             set
             {
-                firstName = value;
-
-                //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT EMPTY USING A DELEGATE
-                AddDelayedValidationRule(
-                    delegate { return !string.IsNullOrEmpty(firstName); },
-                    new object[] { },
-                    new ValidationException($"{nameof(firstName)} cannot be empty"));
-
-                //ADD A RULE TO MAKE SURE THE FIRST NAME IS 3 OR MORE CHARACTERS USING LAMBDA
-                AddDelayedValidationRule(
-                    args => firstName.Length >= 3,
-                    null,
-                    new ValidationException($"{nameof(firstName)} must be at least 3 characters long"));
-
-                //ADD A RULE TO MAKE SURE THE FIRST NAME IS NOT THE SAME AS THE LAST NAME USING A METHOD
-                AddDelayedValidationRule(
-                    firstAndLastCannotBeEqual,
-                    null,
-                    new ValidationException($"{nameof(firstName)} and {nameof(lastName)} cannot be the same"));
+                SetField(ref firstName, value);
             }
         }
 
@@ -115,18 +115,11 @@
         {
             get
             {
-                Validate();
-                return lastName;
+                return GetField(lastName);
             }
             set
             {
-                lastName = value;
-
-                //ADD A RULE TO MAKE SURE THE FIRST NAME AND LAST NAME ARE NOT EQUAL
-                AddDelayedValidationRule(
-                    firstAndLastCannotBeEqual,
-                    new object[] { },
-                    new ValidationException("First and Last cannot be the same"));
+                SetField(ref lastName, value);
             }
         }
 
