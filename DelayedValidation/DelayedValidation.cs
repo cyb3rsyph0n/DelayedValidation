@@ -113,10 +113,21 @@
         /// <typeparam name="T"></typeparam>
         /// <param name="field"></param>
         /// <param name="value"></param>
-        protected internal void SetField<T>(ref T field, T value)
+        /// <param name="validate"></param>
+        /// <param name="enforceValidation"></param>
+        protected internal void SetField<T>(
+            ref T field,
+            T value,
+            bool validate = false,
+            bool enforceValidation = false)
         {
+            if (field == null) throw new ArgumentNullException(nameof(field));
+
             isDirty = true;
             field = value;
+
+            //IF VALIDATE IS TRUE THEN RUN VALIDATION DURING THE SETTER
+            if (validate) Validate(enforceValidation);
         }
 
         #endregion
